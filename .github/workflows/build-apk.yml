@@ -1,6 +1,3 @@
-# ESTE ARCHIVO CONFIGURA GITHUB ACTIONS PARA COMPILAR EL APK AUTOMÁTICAMENTE EN LA NUBE
-# CADA VEZ QUE SE SUBE CÓDIGO A LA RAMA "main", SIN NECESIDAD DE INSTALAR ANDROID STUDIO
-# NI JAVA EN LA COMPUTADORA LOCAL. EL RESULTADO SE PUEDE DESCARGAR DESDE LA PESTAÑA "Actions".
 name: Build APK
 
 on:
@@ -26,24 +23,18 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Instalar dependencias
-        run: npm install
-
-      - name: Compilar Angular
-        run: npx ng build
-
-      - name: Sincronizar Capacitor con Android
-        run: npx cap sync android
-
-      - name: Dar permisos de ejecución a gradlew
-        run: chmod +x android/gradlew
-
-      - name: Compilar APK
-        run: cd android && ./gradlew assembleDebug
+      - name: Instalar dependencias y compilar
+        run: |
+          cd status-saver-ios
+          npm install
+          npx ng build
+          npx cap sync android
+          chmod +x android/gradlew
+          cd android
+          ./gradlew assembleDebug
 
       - name: Subir APK como resultado descargable
         uses: actions/upload-artifact@v4
         with:
           name: SaveGo-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          
+          path: status-saver-ios/android/app/build/outputs/apk/debug/app-debug.apk
