@@ -1,14 +1,81 @@
+<div class="p-4">
 
-<div class="min-h-screen bg-gray-100 font-sans pb-12">
-  <div class="flex flex-col items-center mt-6 px-4">
-    <h2 class="text-2xl font-semibold mb-6 text-gray-800">Estados de WhatsApp</h2>
+  <!-- Verificando permiso -->
+  @if (permiso() === 'verificando') {
+    <div class="text-center text-gray-500 py-10">Verificando permisos...</div>
+  }
 
-    <div class="w-full max-w-md bg-white p-6 rounded-2xl border border-gray-200 shadow-sm text-center">
-      <p class="text-gray-600 mb-4">Aquí podrás ver y guardar los estados de tus contactos.</p>
+  <!-- No es app nativa (navegador) -->
+  @if (permiso() === 'no-soportado') {
+    <div class="text-center text-gray-500 py-10 px-4">
+      Esta función solo está disponible dentro de la app instalada en tu teléfono Android.
+    </div>
+  }
+
+  <!-- Falta el permiso especial -->
+  @if (permiso() === 'denegado') {
+    <div class="text-center py-10 px-4">
+      <p class="mb-4 text-gray-700">
+        Para ver los estados de WhatsApp necesitamos el permiso
+        <strong>"Acceso a todos los archivos"</strong>.
+      </p>
       <button
-        class="w-full bg-green-600 text-white font-bold py-3 rounded-2xl hover:bg-green-700 transition shadow-sm">
-        Cargar Estados
+        (click)="pedirPermiso()"
+        class="bg-blue-600 text-white px-5 py-2 rounded-full font-semibold mb-3">
+        Activar permiso
+      </button>
+      <br>
+      <button
+        (click)="verificarPermisoYCargar()"
+        class="text-blue-600 underline text-sm">
+        Ya lo activé, verificar de nuevo
       </button>
     </div>
-  </div>
+  }
+
+  <!-- Permiso concedido -->
+  @if (permiso() === 'concedido') {
+
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">Estados de WhatsApp</h2>
+      <button (click)="cargarEstados()" class="text-blue-600 text-sm underline">
+        Actualizar
+      </button>
+    </div>
+
+    @if (cargando()) {
+      <div class="text-center text-gray-500 py-10">Buscando estados...</div>
+    } @else if (!hayEstados()) {
+      <div class="text-center text-gray-500 py-10 px-4">
+        No se encontraron estados. Abre WhatsApp, mira algún estado de un contacto,
+        y vuelve aquí para verlo listado.
+      </div>
+    } @else {
+      <div class="grid grid-cols-3 gap-2">
+        @for (estado of estados(); track estado.nombre) {
+          <div class="relative rounded-lg overflow-hidden bg-gray-100 aspect-[9/16]">
+            @if (estado.tipo === 'image') {
+              <img [src]="estado.urlVisualizacion" class="w-full h-full object-cover" />
+            } @else {
+              <video [src]="estado.urlVisualizacion" class="w-full h-full object-cover" muted></video>
+            }
+
+            <button
+              (click)="guardar(estado)"
+              [disabled]="guardando() === estado.nombre"
+              class="absolute bottom-1 right-1 bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center text-white text-sm">
+              @if (guardando() === estado.nombre) {
+                ...
+              } @else if (yaGuardado(estado.nombre)) {
+                ✓
+              } @else {
+                ↓
+              }
+            </button>
+          </div>
+        }
+      </div>
+    }
+  }
+
 </div>
