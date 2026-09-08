@@ -1,9 +1,3 @@
-/* package com.savego.app;
-
-import com.getcapacitor.BridgeActivity;
-
-public class MainActivity extends BridgeActivity {} */
-
 package com.savego.app;
 
 import android.os.Bundle;

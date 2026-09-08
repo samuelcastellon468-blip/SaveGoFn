@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- SE AGREGARON ESTOS PERMISOS PARA PODER GUARDAR FOTOS Y VIDEOS DIRECTAMENTE EN LA GALERÍA
          DEL SISTEMA. EN ANDROID 13+ SE USAN LOS PERMISOS GRANULARES DE MEDIOS; EN VERSIONES
@@ -7,6 +8,11 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+
+    <!-- PERMISO ESPECIAL PARA PODER LEER LA CARPETA OCULTA DE ESTADOS DE WHATSAPP.
+         SE PIDE MANUALMENTE EN UNA PANTALLA DE AJUSTES, NO CON UN DIÁLOGO NORMAL. -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
