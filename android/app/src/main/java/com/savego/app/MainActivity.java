@@ -1,5 +1,19 @@
-package com.savego.app;
+/* package com.savego.app;
 
 import com.getcapacitor.BridgeActivity;
 
-public class MainActivity extends BridgeActivity {}
+public class MainActivity extends BridgeActivity {} */
+
+package com.savego.app;
+
+import android.os.Bundle;
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        // Registrar aquí nuestro plugin nativo personalizado ANTES de super.onCreate()
+        registerPlugin(AllFilesAccessPlugin.class);
+        super.onCreate(savedInstanceState);
+    }
+}
