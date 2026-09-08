@@ -18,20 +18,29 @@ jobs:
           node-version: '20'
 
       - name: Configurar Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Instalar dependencias y compilar
+      - name: Instalar dependencias
+        run: npm install
+        working-directory: ./status-saver-ios
+
+      - name: Compilar Angular
+        run: npx ng build
+        working-directory: ./status-saver-ios
+
+      - name: Sincronizar Capacitor
+        run: npx cap sync android
+        working-directory: ./status-saver-ios
+
+      - name: Dar permisos y compilar APK
         run: |
-          cd status-saver-ios
-          npm install
-          npx ng build
-          npx cap sync android
           chmod +x android/gradlew
           cd android
           ./gradlew assembleDebug
+        working-directory: ./status-saver-ios
 
       - name: Subir APK como resultado descargable
         uses: actions/upload-artifact@v4
