@@ -106,11 +106,26 @@ export class Whatsapp implements OnInit {
     this.cargando.set(false);
   }
 
+  // CAMBIO: antes usábamos fetch(estado.urlVisualizacion) para leer el archivo.
+  // Eso dejó de funcionar al activar "CapacitorHttp: { enabled: true }" en
+  // capacitor.config.ts (necesario para que TikTok evite el bloqueo de CORS),
+  // porque esa opción intercepta TODAS las llamadas fetch() de la app, incluida
+  // esta, que en realidad solo necesita leer un archivo local del teléfono
+  // (no es una petición de red). Ahora usamos Filesystem.readFile(), que lee
+  // el archivo directamente por su ruta y no pasa por fetch/CapacitorHttp.
   async guardar(estado: EstadoWhatsapp): Promise<void> {
     this.guardando.set(estado.nombre);
     try {
-      const respuesta = await fetch(estado.urlVisualizacion);
-      const blob = await respuesta.blob();
+      const archivo = await Filesystem.readFile({ path: estado.rutaCompleta });
+      const base64 = archivo.data as string;
+
+      const mime = estado.tipo === 'image' ? 'image/jpeg' : 'video/mp4';
+      const byteCharacters = atob(base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const blob = new Blob([new Uint8Array(byteNumbers)], { type: mime });
 
       await new Promise<void>((resolve, reject) => {
         this.downloadService.guardarEnGaleria(blob, estado.tipo, estado.nombre).subscribe({

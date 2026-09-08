@@ -57,7 +57,10 @@
             @if (estado.tipo === 'image') {
               <img [src]="estado.urlVisualizacion" class="w-full h-full object-cover" />
             } @else {
-              <video [src]="estado.urlVisualizacion" class="w-full h-full object-cover" muted></video>
+              <!-- CAMBIO: se agregó preload="metadata" para que el WebView de Android
+                   cargue el primer cuadro del video como miniatura. Sin esto, algunos
+                   dispositivos dejan el <video> en negro/vacío hasta que se reproduce. -->
+              <video [src]="estado.urlVisualizacion" preload="metadata" class="w-full h-full object-cover" muted></video>
             }
 
             <button
