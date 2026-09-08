@@ -1,0 +1,70 @@
+<div class="min-h-screen bg-gray-100 font-sans">
+  <div class="flex flex-col items-center mt-12 px-4 pb-12">
+    <h2 class="text-2xl font-semibold mb-6 text-gray-800">Descargar Video</h2>
+
+    <input
+      #urlInput
+      type="url"
+      inputmode="url"
+      autocomplete="off"
+      placeholder="Pega el enlace de TikTok aquí"
+      [disabled]="buscando()"
+      class="w-full max-w-md px-4 py-3 rounded-2xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 text-gray-700 bg-white disabled:opacity-60"
+    >
+
+    <button
+      (click)="buscarVideo(urlInput.value)"
+      [disabled]="buscando()"
+      class="w-full max-w-md bg-blue-600 text-white font-bold py-3 rounded-2xl hover:bg-blue-700 transition shadow-sm mb-4 disabled:opacity-50 disabled:cursor-not-allowed">
+      @if (buscando()) {
+        Buscando video...
+      } @else {
+        Buscar video
+      }
+    </button>
+
+    @if (mensajeError()) {
+      <p aria-live="polite" class="text-center text-red-700 font-medium bg-red-50 p-4 rounded-xl border border-red-100 w-full max-w-md mb-4">
+        {{ mensajeError() }}
+      </p>
+    }
+
+    @if (buscando()) {
+      <p aria-live="polite" class="text-center text-blue-700 font-medium bg-blue-50 p-4 rounded-xl border border-blue-100 w-full max-w-md mb-4">
+        Buscando video... un momento.
+      </p>
+    }
+
+    @if (video(); as v) {
+      <div class="w-full max-w-md bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-4">
+        <img [src]="v.cover" [alt]="v.title" class="w-full h-56 object-cover bg-gray-200">
+        <div class="p-4">
+          <p class="font-semibold text-gray-900 mb-1">{{ v.title }}</p>
+          <p class="text-sm text-gray-500 mb-1">&#64;{{ v.author.unique_id }}</p>
+          <p class="text-sm text-gray-500">Duración: {{ formatearDuracion(v.duration) }}</p>
+        </div>
+      </div>
+
+      <button
+        (click)="descargarArchivo()"
+        [disabled]="descargando()"
+        class="w-full max-w-md bg-green-600 text-white font-bold py-3 rounded-2xl hover:bg-green-700 transition shadow-sm mb-2 disabled:opacity-50 disabled:cursor-not-allowed">
+        @if (descargando()) {
+          Descargando...
+        } @else if (descargaCompletada()) {
+          ¡Descarga completa! Descargar de nuevo
+        } @else {
+          Guardar video en mi dispositivo
+        }
+      </button>
+
+      <a
+        [href]="v.play"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-sm text-gray-500 underline">
+        O abre el video directo aquí
+      </a>
+    }
+  </div>
+</div>

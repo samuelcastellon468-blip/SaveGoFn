@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SaveGo</string>
+    <string name="title_activity_main">SaveGo</string>
+    <string name="package_name">com.savego.app</string>
+    <string name="custom_url_scheme">com.savego.app</string>
+</resources>
