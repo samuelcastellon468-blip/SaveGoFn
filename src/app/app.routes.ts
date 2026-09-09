@@ -6,11 +6,13 @@ import { Routes } from '@angular/router';
 import { Tiktok } from './components/tiktok/tiktok';
 import { Whatsapp } from './components/whatsapp/whatsapp';
 import { Saved } from './components/saved/saved';
+import { Settings } from '././components/settings/settings';
 
 export const routes: Routes = [
   { path: 'tiktok', component: Tiktok },
   { path: 'whatsapp', component: Whatsapp },
   { path: 'saved', component: Saved },
+  { path: 'settings', component: Settings },
   { path: '', redirectTo: 'tiktok', pathMatch: 'full' },
   { path: '**', redirectTo: 'tiktok' }
 ];

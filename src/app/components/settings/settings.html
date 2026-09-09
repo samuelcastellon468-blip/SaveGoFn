@@ -1,0 +1,92 @@
+<div class="min-h-screen bg-gray-100 font-sans pb-28">
+  <h1 class="text-2xl font-extrabold text-gray-900 text-center pt-6 pb-6">Save Go</h1>
+
+  <div class="px-4 max-w-md mx-auto">
+
+    <!-- CUENTA -->
+    <p class="text-xs font-bold text-gray-400 tracking-wide mb-2 px-1">CUENTA</p>
+    <div class="bg-white rounded-2xl overflow-hidden shadow-sm mb-6">
+
+      <!-- Notificaciones: fila informativa. No hay sistema de notificaciones push
+           implementado todavía, así que se muestra deshabilitada en vez de simular
+           una función que no existe. -->
+      <div class="flex items-center gap-3 px-4 py-4 border-b border-gray-100">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4a2 2 0 01-.6-1.4V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+        </svg>
+        <div class="flex-1">
+          <p class="text-gray-900 font-medium">Notificaciones</p>
+          <p class="text-xs text-gray-400">Todavía no disponible</p>
+        </div>
+      </div>
+
+      <button (click)="alternarPrivacidad()" class="w-full flex items-center gap-3 px-4 py-4 text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span class="flex-1 text-gray-900 font-medium">Política de Privacidad</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 transition" [class.rotate-90]="mostrarPrivacidad()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
+
+      @if (mostrarPrivacidad()) {
+        <div class="px-4 pb-4 text-sm text-gray-600 leading-relaxed border-t border-gray-100 pt-3">
+          <p class="mb-2">
+            Save Go procesa todo dentro de tu teléfono: los estados de WhatsApp se leen directo
+            de la carpeta del sistema y no se suben a ningún servidor propio.
+          </p>
+          <p>
+            Las búsquedas de TikTok sí requieren una petición a un servicio externo para
+            obtener el enlace del video, pero el archivo se descarga directo a tu dispositivo.
+          </p>
+        </div>
+      }
+    </div>
+
+    <!-- AJUSTES DE LA APP -->
+    <p class="text-xs font-bold text-gray-400 tracking-wide mb-2 px-1">AJUSTES DE LA APP</p>
+    <div class="bg-white rounded-2xl overflow-hidden shadow-sm">
+
+      <div class="flex items-center justify-between gap-3 px-4 py-4 border-b border-gray-100">
+        <div class="flex items-center gap-3 pr-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5-5 5 5M12 5v12"></path>
+          </svg>
+          <div>
+            <p class="text-gray-900 font-medium">Guardar directo en galería</p>
+            <p class="text-xs text-gray-500">Al descargar, también queda en la Galería del sistema.</p>
+          </div>
+        </div>
+        <button
+          (click)="settingsService.alternarGuardarDirectoGaleria()"
+          role="switch"
+          [attr.aria-checked]="settingsService.guardarDirectoGaleria()"
+          aria-label="Guardar directo en galería"
+          class="w-12 h-7 rounded-full transition relative shrink-0"
+          [class.bg-green-500]="settingsService.guardarDirectoGaleria()"
+          [class.bg-gray-300]="!settingsService.guardarDirectoGaleria()">
+          <span
+            class="absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-all"
+            [class.left-[22px]]="settingsService.guardarDirectoGaleria()"
+            [class.left-0.5]="!settingsService.guardarDirectoGaleria()"></span>
+        </button>
+      </div>
+
+      <div class="flex items-center justify-between gap-3 px-4 py-4">
+        <div class="flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"></path>
+          </svg>
+          <span class="text-gray-900 font-medium">Ruta de almacenamiento</span>
+        </div>
+        <span class="text-gray-400 text-xs text-right max-w-[45%]">{{ settingsService.storageRoute() }}</span>
+      </div>
+    </div>
+
+    <p class="text-xs text-gray-400 text-center mt-6 px-6">
+      Elegir una carpeta propia todavía no está disponible; por ahora la app decide según
+      este mismo switch.
+    </p>
+  </div>
+</div>

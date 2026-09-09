@@ -44,9 +44,6 @@ export class DownloadService {
     const promesa = this.blobABase64(blob).then(async (base64) => {
       const path = `data:${blob.type};base64,${base64}`;
 
-      // NUEVO: desde la v5 del plugin, guardar en Android EXIGE un albumIdentifier
-      // (antes no era obligatorio). Sin esto, saveVideo/savePhoto fallan con
-      // el error "Album identifier required".
       const albumIdentifier = await this.obtenerIdDelAlbum();
 
       if (tipo === 'video') {
@@ -59,8 +56,6 @@ export class DownloadService {
     return from(promesa);
   }
 
-  // Busca si ya existe un álbum "SaveGo"; si no existe, lo crea. Devuelve su
-  // identificador (necesario en Android para guardar fotos/videos).
   private async obtenerIdDelAlbum(): Promise<string> {
     if (this.albumIdCache) {
       return this.albumIdCache;
@@ -74,8 +69,6 @@ export class DownloadService {
       return existente.identifier;
     }
 
-    // createAlbum() no devuelve el identificador (devuelve void), así que
-    // después de crearlo hay que volver a pedir la lista para obtenerlo.
     await Media.createAlbum({ name: NOMBRE_ALBUM });
     const resultadoActualizado = await Media.getAlbums();
     const nuevoAlbum = resultadoActualizado.albums.find((a) => a.name === NOMBRE_ALBUM);

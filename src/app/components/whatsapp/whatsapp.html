@@ -1,4 +1,4 @@
-<div class="p-4">
+<div class="min-h-screen bg-gray-100 font-sans pb-28">
 
   <!-- Verificando permiso -->
   @if (permiso() === 'verificando') {
@@ -36,11 +36,82 @@
   <!-- Permiso concedido -->
   @if (permiso() === 'concedido') {
 
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-bold">Estados de WhatsApp</h2>
-      <button (click)="cargarEstados()" class="text-blue-600 text-sm underline">
-        Actualizar
+    <!-- Encabezado: título + buscar + actualizar -->
+    <div class="flex items-center justify-between px-4 pt-4 pb-3">
+      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Save Go</h1>
+      <div class="flex items-center gap-4">
+        <button (click)="alternarBusqueda()" aria-label="Buscar" class="text-gray-800">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+        <button (click)="cargarEstados()" aria-label="Actualizar" class="text-gray-800">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" [class.animate-spin]="cargando()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    @if (mostrarBusqueda()) {
+      <div class="px-4 pb-3">
+        <input
+          type="text"
+          [value]="terminoBusqueda()"
+          (input)="onBuscar($event)"
+          placeholder="Buscar por nombre de archivo"
+          class="w-full px-4 py-2.5 rounded-xl border border-gray-300 bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+    }
+
+    <!-- Pestañas IMÁGENES / VIDEOS -->
+    <div class="px-4">
+      <div class="flex bg-gray-200 rounded-full p-1">
+        <button
+          (click)="cambiarPestana('image')"
+          [class.bg-blue-600]="pestanaActiva() === 'image'"
+          [class.text-white]="pestanaActiva() === 'image'"
+          [class.text-gray-600]="pestanaActiva() !== 'image'"
+          class="flex-1 py-2.5 rounded-full text-sm font-bold tracking-wide transition">
+          IMÁGENES ({{ cantidadImagenes() }})
+        </button>
+        <button
+          (click)="cambiarPestana('video')"
+          [class.bg-blue-600]="pestanaActiva() === 'video'"
+          [class.text-white]="pestanaActiva() === 'video'"
+          [class.text-gray-600]="pestanaActiva() !== 'video'"
+          class="flex-1 py-2.5 rounded-full text-sm font-bold tracking-wide transition">
+          VIDEOS ({{ cantidadVideos() }})
+        </button>
+      </div>
+    </div>
+
+    <!-- Switch: Guardar directo a galería -->
+    <div class="flex items-center justify-between px-4 py-4">
+      <div class="pr-4">
+        <p class="font-semibold text-gray-900 text-sm">Guardar directo a la galería</p>
+        <p class="text-xs text-gray-500">También queda una copia en la biblioteca de la app.</p>
+      </div>
+      <button
+        (click)="alternarGuardarEnGaleria()"
+        role="switch"
+        [attr.aria-checked]="guardarDirectoGaleria()"
+        aria-label="Guardar directo a la galería"
+        class="w-12 h-7 rounded-full transition relative shrink-0"
+        [class.bg-green-500]="guardarDirectoGaleria()"
+        [class.bg-gray-300]="!guardarDirectoGaleria()">
+        <span
+          class="absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-all"
+          [class.left-[22px]]="guardarDirectoGaleria()"
+          [class.left-0.5]="!guardarDirectoGaleria()"></span>
       </button>
+    </div>
+
+    <!-- Biblioteca -->
+    <div class="px-4 mb-3">
+      <h2 class="text-2xl font-extrabold text-gray-900">Biblioteca</h2>
+      <p class="text-sm text-gray-500">Tocá cualquier elemento para verlo o descargarlo.</p>
     </div>
 
     @if (cargando()) {
@@ -50,23 +121,48 @@
         No se encontraron estados. Abre WhatsApp, mira algún estado de un contacto,
         y vuelve aquí para verlo listado.
       </div>
+    } @else if (!hayResultadosFiltrados()) {
+      <div class="text-center text-gray-500 py-10 px-4">
+        @if (pestanaActiva() === 'image') {
+          No hay imágenes de estado {{ terminoBusqueda() ? 'que coincidan con la búsqueda' : 'por ahora' }}.
+        } @else {
+          No hay videos de estado {{ terminoBusqueda() ? 'que coincidan con la búsqueda' : 'por ahora' }}.
+        }
+      </div>
     } @else {
-      <div class="grid grid-cols-3 gap-2">
-        @for (estado of estados(); track estado.nombre) {
-          <div class="relative rounded-lg overflow-hidden bg-gray-100 aspect-[9/16]">
+      <div class="grid grid-cols-2 gap-3 px-4">
+        @for (estado of estadosFiltrados(); track estado.nombre) {
+          <div class="relative rounded-2xl overflow-hidden bg-gray-200 aspect-[9/16] shadow-sm">
+
+            <span class="absolute top-2 left-2 bg-black/60 text-white text-[11px] font-semibold px-2 py-1 rounded-full z-10">
+              {{ estado.tipo === 'image' ? 'Imagen' : 'Video' }}
+            </span>
+
             @if (estado.tipo === 'image') {
               <img [src]="estado.urlVisualizacion" class="w-full h-full object-cover" />
             } @else {
-              <!-- CAMBIO: se agregó preload="metadata" para que el WebView de Android
-                   cargue el primer cuadro del video como miniatura. Sin esto, algunos
-                   dispositivos dejan el <video> en negro/vacío hasta que se reproduce. -->
-              <video [src]="estado.urlVisualizacion" preload="metadata" class="w-full h-full object-cover" muted></video>
+              <!-- CAMBIO: se agregó preload="metadata" + (loadedmetadata) para que el
+                   WebView de Android pinte el primer cuadro del video como miniatura.
+                   Sin esto, algunos dispositivos dejan el <video> en negro. -->
+              <video
+                [src]="estado.urlVisualizacion"
+                preload="metadata"
+                muted
+                playsinline
+                (loadedmetadata)="mostrarPrimerCuadro($event)"
+                class="w-full h-full object-cover"></video>
             }
+
+            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-2 pt-8 pb-2">
+              @if (fechaLegible(estado.nombre)) {
+                <p class="text-white/90 text-[11px] font-medium">{{ fechaLegible(estado.nombre) }}</p>
+              }
+            </div>
 
             <button
               (click)="guardar(estado)"
               [disabled]="guardando() === estado.nombre"
-              class="absolute bottom-1 right-1 bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center text-white text-sm">
+              class="absolute bottom-2 right-2 bg-blue-600 rounded-full w-9 h-9 flex items-center justify-center text-white text-sm shadow-md z-10">
               @if (guardando() === estado.nombre) {
                 ...
               } @else if (yaGuardado(estado.nombre)) {

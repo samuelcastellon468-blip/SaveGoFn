@@ -1,12 +1,75 @@
 <!-- SE ELIMINÓ EL TEXTO "saved works!" QUE ERA EL PLACEHOLDER AUTOGENERADO POR EL CLI DE ANGULAR
      AL CREAR EL COMPONENTE Y NUNCA SE HABÍA QUITADO; NO CUMPLÍA NINGUNA FUNCIÓN Y SE MOSTRABA
      ENCIMA DEL CONTENIDO REAL DE LA PÁGINA. -->
-<div class="min-h-screen bg-gray-100 font-sans pb-12">
+<!-- CORRECCIÓN: se reemplazó el placeholder estático por la lista real, leyendo
+     itemsFiltrados() (que viene de StorageService.savedItems()). Antes este archivo no
+     tenía ningún binding a datos, por eso nunca mostraba lo guardado de TikTok ni de WhatsApp. -->
+<div class="min-h-screen bg-gray-100 font-sans pb-28">
   <div class="flex flex-col items-center mt-6 px-4">
-    <h2 class="text-2xl font-semibold mb-6 text-gray-800">Archivos Guardados</h2>
+    <h2 class="text-2xl font-semibold mb-4 text-gray-800">Archivos Guardados</h2>
 
-    <div class="w-full max-w-md bg-white p-6 rounded-2xl border border-gray-200 shadow-sm text-center">
-      <p class="text-gray-600 mb-4">Aquí se mostrarán los videos y estados que hayas guardado en tu dispositivo.</p>
+    <div class="flex gap-2 mb-6">
+      <button
+        (click)="cambiarFiltro('todos')"
+        [class.bg-blue-600]="filtro() === 'todos'"
+        [class.text-white]="filtro() === 'todos'"
+        [class.bg-white]="filtro() !== 'todos'"
+        [class.text-gray-600]="filtro() !== 'todos'"
+        class="px-4 py-1.5 rounded-full text-sm font-semibold border border-gray-200 transition">
+        Todos
+      </button>
+      <button
+        (click)="cambiarFiltro('tiktok')"
+        [class.bg-blue-600]="filtro() === 'tiktok'"
+        [class.text-white]="filtro() === 'tiktok'"
+        [class.bg-white]="filtro() !== 'tiktok'"
+        [class.text-gray-600]="filtro() !== 'tiktok'"
+        class="px-4 py-1.5 rounded-full text-sm font-semibold border border-gray-200 transition">
+        TikTok
+      </button>
+      <button
+        (click)="cambiarFiltro('whatsapp')"
+        [class.bg-blue-600]="filtro() === 'whatsapp'"
+        [class.text-white]="filtro() === 'whatsapp'"
+        [class.bg-white]="filtro() !== 'whatsapp'"
+        [class.text-gray-600]="filtro() !== 'whatsapp'"
+        class="px-4 py-1.5 rounded-full text-sm font-semibold border border-gray-200 transition">
+        WhatsApp
+      </button>
     </div>
+
+    @if (!hayItems()) {
+      <div class="w-full max-w-md bg-white p-6 rounded-2xl border border-gray-200 shadow-sm text-center">
+        <p class="text-gray-600">Todavía no guardaste nada de esta categoría. Lo que descargues desde TikTok o WhatsApp va a aparecer acá.</p>
+      </div>
+    } @else {
+      <div class="grid grid-cols-3 gap-2 w-full max-w-md">
+        @for (item of itemsFiltrados(); track item.id + item.type) {
+          <div class="relative rounded-lg overflow-hidden bg-gray-200 aspect-[9/16]">
+            @if (item.thumbnail) {
+              <img [src]="item.thumbnail" [alt]="item.title" class="w-full h-full object-cover" />
+            } @else if (item.mediaType === 'video') {
+              <video
+                [src]="item.url"
+                preload="metadata"
+                muted
+                playsinline
+                (loadedmetadata)="mostrarPrimerCuadro($event)"
+                class="w-full h-full object-cover"></video>
+            } @else {
+              <img [src]="item.url" [alt]="item.title" class="w-full h-full object-cover" />
+            }
+
+            <span class="absolute top-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded-full capitalize">
+              {{ item.type }}
+            </span>
+
+            <span class="absolute bottom-1 left-1 right-1 text-white text-[10px] bg-black/50 rounded px-1 py-0.5 truncate">
+              {{ item.date }}
+            </span>
+          </div>
+        }
+      </div>
+    }
   </div>
 </div>
