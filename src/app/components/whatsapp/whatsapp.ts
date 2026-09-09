@@ -66,7 +66,8 @@ export class Whatsapp implements OnInit {
       } else {
         this.permiso.set('denegado');
       }
-    } catch {
+    } catch (err) {
+  console.error('ERROR AQUÍ:', err);
       this.permiso.set('no-soportado');
     }
   }
@@ -97,7 +98,8 @@ export class Whatsapp implements OnInit {
             urlVisualizacion: Capacitor.convertFileSrc(rutaCompleta)
           });
         }
-      } catch {
+      } catch(err) {
+  console.error('ERROR AQUÍ:', err);
         // Esta carpeta no existe en este dispositivo. Se ignora sin romper nada.
       }
     }
@@ -146,7 +148,8 @@ export class Whatsapp implements OnInit {
       const nuevosGuardados = new Set(this.guardados());
       nuevosGuardados.add(estado.nombre);
       this.guardados.set(nuevosGuardados);
-    } catch {
+    } catch  (err) {
+  console.error('ERROR AQUÍ:', err);
       // Se podría mostrar un mensaje de error aquí si se desea en el futuro.
     } finally {
       this.guardando.set(null);
