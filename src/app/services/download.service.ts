@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError, from } from 'rxjs';
 import { Capacitor } from '@capacitor/core';
 import { Media } from '@capacitor-community/media';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 export type TipoMedia = 'video' | 'image';
 
@@ -54,6 +55,22 @@ export class DownloadService {
     });
 
     return from(promesa);
+  }
+
+  // NUEVO: usado cuando el usuario apaga el switch "Guardar directo a galería"
+  // en Ajustes. En vez de guardar en la Galería del sistema (visible para otras
+  // apps), copia el archivo al almacenamiento PRIVADO de la app (solo esta app
+  // puede leerlo). Recibe el base64 ya leído del archivo original y el nombre
+  // deseado, y devuelve el URI interno del archivo guardado (usado luego con
+  // Capacitor.convertFileSrc() para poder mostrarlo en pantalla).
+  async guardarSoloEnLibreria(base64: string, nombreArchivo: string): Promise<string> {
+    const resultado = await Filesystem.writeFile({
+      path: `SaveGo/${nombreArchivo}`,
+      data: base64,
+      directory: Directory.Data,
+      recursive: true
+    });
+    return resultado.uri;
   }
 
   private async obtenerIdDelAlbum(): Promise<string> {
