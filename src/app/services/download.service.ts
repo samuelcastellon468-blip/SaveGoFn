@@ -1,36 +1,3 @@
-/* import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
-
-@Injectable({ providedIn: 'root' })
-export class DownloadService {
-  private readonly http = inject(HttpClient);
-
-  obtenerArchivo(url: string): Observable<Blob> {
-    return this.http.get(url, { responseType: 'blob' }).pipe(
-      catchError(() => throwError(() =>
-        new Error('No se pudo descargar el archivo. Inténtalo de nuevo.')
-      ))
-    );
-  }
-
-  guardarBlob(blob: Blob, nombreArchivo: string): void {
-    const url = window.URL.createObjectURL(blob);
-    const enlace = document.createElement('a');
-    enlace.href = url;
-    enlace.download = nombreArchivo;
-    document.body.appendChild(enlace);
-    enlace.click();
-    document.body.removeChild(enlace);
-    window.URL.revokeObjectURL(url);
-  }
-} */
-
-  // SE REESCRIBIÓ ESTE SERVICIO PARA QUE, EN LA APP NATIVA (ANDROID), EL ARCHIVO SE GUARDE
-// DIRECTAMENTE EN LA GALERÍA DEL SISTEMA USANDO @capacitor-community/media, EN LUGAR DE SOLO
-// DESCARGARLO COMO BLOB EN EL NAVEGADOR (LO CUAL NO GUARDA NADA EN LA GALERÍA DE UN TELÉFONO REAL).
-// SE MANTIENE EL COMPORTAMIENTO ANTERIOR (BLOB + ENLACE) SOLO COMO RESPALDO CUANDO SE EJECUTA
-// EN NAVEGADOR WEB (Capacitor.isNativePlatform() === false), YA QUE AHÍ NO EXISTE GALERÍA DE SISTEMA.
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError, from } from 'rxjs';
@@ -39,9 +6,15 @@ import { Media } from '@capacitor-community/media';
 
 export type TipoMedia = 'video' | 'image';
 
+const NOMBRE_ALBUM = 'SaveGo';
+
 @Injectable({ providedIn: 'root' })
 export class DownloadService {
   private readonly http = inject(HttpClient);
+
+  // Se guarda en memoria una vez obtenido, para no crear/consultar el álbum
+  // en cada descarga.
+  private albumIdCache: string | null = null;
 
   obtenerArchivo(url: string): Observable<Blob> {
     return this.http.get(url, { responseType: 'blob' }).pipe(
@@ -62,8 +35,6 @@ export class DownloadService {
     window.URL.revokeObjectURL(url);
   }
 
-  // NUEVO MÉTODO: guarda el archivo directamente en la Galería del sistema cuando la app
-  // corre como app nativa Android. En navegador web, cae de vuelta al método anterior (descarga normal).
   guardarEnGaleria(blob: Blob, tipo: TipoMedia, nombreArchivo: string): Observable<void> {
     if (!Capacitor.isNativePlatform()) {
       this.guardarBlob(blob, nombreArchivo);
@@ -72,14 +43,49 @@ export class DownloadService {
 
     const promesa = this.blobABase64(blob).then(async (base64) => {
       const path = `data:${blob.type};base64,${base64}`;
+
+      // NUEVO: desde la v5 del plugin, guardar en Android EXIGE un albumIdentifier
+      // (antes no era obligatorio). Sin esto, saveVideo/savePhoto fallan con
+      // el error "Album identifier required".
+      const albumIdentifier = await this.obtenerIdDelAlbum();
+
       if (tipo === 'video') {
-        await Media.saveVideo({ path });
+        await Media.saveVideo({ path, albumIdentifier });
       } else {
-        await Media.savePhoto({ path });
+        await Media.savePhoto({ path, albumIdentifier });
       }
     });
 
     return from(promesa);
+  }
+
+  // Busca si ya existe un álbum "SaveGo"; si no existe, lo crea. Devuelve su
+  // identificador (necesario en Android para guardar fotos/videos).
+  private async obtenerIdDelAlbum(): Promise<string> {
+    if (this.albumIdCache) {
+      return this.albumIdCache;
+    }
+
+    const resultado = await Media.getAlbums();
+    const existente = resultado.albums.find((a) => a.name === NOMBRE_ALBUM);
+
+    if (existente) {
+      this.albumIdCache = existente.identifier;
+      return existente.identifier;
+    }
+
+    // createAlbum() no devuelve el identificador (devuelve void), así que
+    // después de crearlo hay que volver a pedir la lista para obtenerlo.
+    await Media.createAlbum({ name: NOMBRE_ALBUM });
+    const resultadoActualizado = await Media.getAlbums();
+    const nuevoAlbum = resultadoActualizado.albums.find((a) => a.name === NOMBRE_ALBUM);
+
+    if (!nuevoAlbum) {
+      throw new Error('No se pudo crear el álbum de destino.');
+    }
+
+    this.albumIdCache = nuevoAlbum.identifier;
+    return nuevoAlbum.identifier;
   }
 
   private blobABase64(blob: Blob): Promise<string> {
